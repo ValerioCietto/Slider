@@ -25,6 +25,8 @@ const int stp = 11;    //can't use pin 10 with the SS LCD as it's the backlight 
 //if it goes low, backlight turns off!
 const int dir = 12;
 
+const boolean debug= false;
+
 //define trigger pin
 const int trig = 13;
 
@@ -54,29 +56,49 @@ int readLcdButtons() {
    left: 504
    select: 741
    */
+  if(debug){ 
   Serial.print(adcIn);
-  if (adcIn > 1000){//1019 1023
-    Serial.println("none");
+  }
+  if (adcIn > 1000){
+    if(debug){
+      Serial.println("none");
+    }
     return btnNone;
   }  
   if (adcIn < 50){//giusto
-    Serial.println("button right");
+    if(debug){
+      Serial.println("button right");
+    }
     return btnR;
   }  
   if (adcIn < 110){//up 99 100 giusto
-    Serial.println("button up");
+    if(debug){
+      Serial.println("button up");
+    }
+    for(int i =1000; i>0;i--){
+    digitalWrite(11, HIGH);   
+    delayMicroseconds(i+50);               
+    digitalWrite(11, LOW);  
+    delayMicroseconds(i+50);    
+  }  
     return btnUp;
   }
-  if (adcIn < 330){//left 409 410   //down 256
-    Serial.println("button down");
+  if (adcIn < 330){
+    if(debug){
+      Serial.println("button down");
+    }
     return btnDn;
   }  
   if (adcIn < 450){//select 639
-    Serial.println("button left");
+    if(debug){
+      Serial.println("button left");
+    }
     return btnL;
   }  
   if (adcIn < 850){
-    Serial.println("button select");//left
+    if(debug){
+      Serial.println("button select");//left
+    }
     return btnSel;
   }
   
@@ -169,16 +191,16 @@ int motionControl() {
 
   //step loop
   do {
-    digitalWrite(stp, HIGH); //fire motor driver step
-    delay(pulseDelay);
-    digitalWrite(stp, LOW); //reset driver
+    digitalWrite(11, HIGH); //fire motor driver step
+    delayMicroseconds(pulseDelay*1000);
+    digitalWrite(11, LOW); //reset driver
     //btnVal = readLcdButtons(); //check there's no stoppage - this takes too long and significantly slows motor; use reset for stop!
     currentStep++;
 
     //at end of each step
     if (currentStep % intervalDistance == 0) {    //if current number of motor steps is divisible by the number of motor steps in a camera step, fire the camera
       digitalWrite(trig, HIGH); //trigger camera shutter
-      delay(80);
+      delayMicroseconds(80*1000);
       digitalWrite(trig, LOW);    //reset trigger pin
       delay((shutterDuration * 1000)-80); //delay needs changing to timer so stop button can be polled
     }
@@ -213,6 +235,15 @@ void setup() {
   }
   lcd.setCursor(4,1);
   lcd.print("mm(max 1300)");
+  
+  //test motore
+  for(int i =1000; i>0;i--){
+    digitalWrite(11, HIGH);   
+    delayMicroseconds(i+50);               
+    digitalWrite(11, LOW);  
+    delayMicroseconds(i+50);    
+  }  
+  //fine test motore
 }
 
 //#############################################################################   MAIN LOOP
@@ -433,12 +464,12 @@ void loop() {
       switch (btnVal) {
       case btnUp:
         {
-          digitalWrite(12, HIGH);
-    
-          digitalWrite(11, HIGH);  
-          delayMicroseconds(100);               
+          for(int i =0;i<200;i++){
+          digitalWrite(11, HIGH);   
+          delayMicroseconds(50);               
           digitalWrite(11, LOW);  
-          delayMicroseconds(100);
+          delayMicroseconds(50); 
+          }   
           break;
         }
 
