@@ -54,21 +54,39 @@ int readLcdButtons() {
    left: 504
    select: 741
    */
-
-  if (adcIn > 1000) return btnNone;
-  if (adcIn < 50)   return btnR;
-  if (adcIn < 250)  return btnUp;
-  if (adcIn < 450)  return btnDn;
-  if (adcIn < 650)  return btnL;
-  if (adcIn < 850)  return btnSel;
-
+  Serial.print(adcIn);
+  if (adcIn > 1000){//1019 1023
+    Serial.println("none");
+    return btnNone;
+  }  
+  if (adcIn < 50){//giusto
+    Serial.println("button right");
+    return btnR;
+  }  
+  if (adcIn < 110){//up 99 100 giusto
+    Serial.println("button up");
+    return btnUp;
+  }
+  if (adcIn < 330){//left 409 410   //down 256
+    Serial.println("button down");
+    return btnDn;
+  }  
+  if (adcIn < 450){//select 639
+    Serial.println("button left");
+    return btnL;
+  }  
+  if (adcIn < 850){
+    Serial.println("button select");//left
+    return btnSel;
+  }
+  
   return btnNone; //if it can't detect anything, return no button pressed
 }
 
 //MENU GUI
 //define top-level menu item strings for numerical navigation
 char* menuItemsTop[] = {
-  "  01 Distance >", "< 02 Duration >", "< 03 Steps > ", "< 04 Direction >", "< 05 Go!"};
+  "  01 Distance >", "< 02 Duration >", "< 03 Steps > ", "< 04 Direction >", "< 05 Go!>","< 06 debug"};
 
 int currentMenuLevel = 0;      //top menu or submenu
 int currentMenuItem = 0;       //x-axis position of menu selection
@@ -169,8 +187,9 @@ int motionControl() {
   while (currentStep < totalMotorSteps);
 
 } //end motion control
-
+//###########################################################################   SETUP
 void setup() {
+  Serial.begin(9600);
   lcd.begin(16, 2);               // initialise LCD lib full-screen
   lcd.setCursor(0,0);             // set cursor position
 
@@ -182,7 +201,7 @@ void setup() {
 
   lcd.print("Welcome to");  //welcome screen
   lcd.setCursor(0,1);
-  lcd.print("SliderCam v0.2!");
+  lcd.print("SliderCam v0.3!");
   delay(1000);
   lcd.clear();
   lcd.print(menuItemsTop[0]);
@@ -196,7 +215,7 @@ void setup() {
   lcd.print("mm(max 1300)");
 }
 
-//MAIN LOOP
+//#############################################################################   MAIN LOOP
 void loop() {
   do {
     btnVal = readLcdButtons();      //continually read the buttons...
@@ -214,7 +233,7 @@ void loop() {
 
     case  btnR:
       {
-        if (currentMenuItem == 4) break;      //can't go right from here
+        if (currentMenuItem == 5) break;      //can't go right from here
         else  currentMenuItem++;
         break;
       }
@@ -384,6 +403,42 @@ void loop() {
       switch (btnVal) {
       case btnUp:
         {
+          break;
+        }
+
+      case btnDn:
+        {
+          break;
+        }
+
+      case btnL:
+        {
+          break;
+        }
+
+      case btnR:
+        {
+          break;
+        }
+
+      case btnSel:
+        {
+          currentMenuLevel--;
+          break;
+        }
+      }  //end switch
+      }
+      else if (currentMenuItem == 5) {    // 06 debug
+      
+      switch (btnVal) {
+      case btnUp:
+        {
+          digitalWrite(12, HIGH);
+    
+          digitalWrite(11, HIGH);  
+          delayMicroseconds(100);               
+          digitalWrite(11, LOW);  
+          delayMicroseconds(100);
           break;
         }
 
