@@ -75,12 +75,7 @@ int readLcdButtons() {
     if(debug){
       Serial.println("button up");
     }
-    for(int i =1000; i>0;i--){
-    digitalWrite(11, HIGH);   
-    delayMicroseconds(i+50);               
-    digitalWrite(11, LOW);  
-    delayMicroseconds(i+50);    
-  }  
+    
     return btnUp;
   }
   if (adcIn < 330){
@@ -108,10 +103,20 @@ int readLcdButtons() {
 //MENU GUI
 //define top-level menu item strings for numerical navigation
 char* menuItemsTop[] = {
-  "  01 Distance >", "< 02 Duration >", "< 03 Steps > ", "< 04 Direction >", "< 05 Go!>","< 06 debug"};
+  "  01 Timelapse >", "< 02 Manual ctrl"};
+char* menuTimelapse[] = {
+  "  1 Numero scatti >","< 2 Intervallo(sec)>", "< 3 Direzione >", "< 4 Inizio!"};
+char* menuManuale[] = {
+  " usa le freccie "};
+  
+
 
 int currentMenuLevel = 0;      //top menu or submenu
 int currentMenuItem = 0;       //x-axis position of menu selection
+
+int currentMenuTimelapseItem = 0;
+int currentMenuManualeItem = 0;
+
 int currentCursorPos = 0;      //current lcd cursor position
 int currentDistance[4] = {
   0, 0, 0, 0};
@@ -223,7 +228,7 @@ void setup() {
 
   lcd.print("Welcome to");  //welcome screen
   lcd.setCursor(0,1);
-  lcd.print("SliderCam v0.3!");
+  lcd.print("SliderCam v1.4!");
   delay(1000);
   lcd.clear();
   lcd.print(menuItemsTop[0]);
@@ -234,16 +239,9 @@ void setup() {
     lcd.print(currentDistance[i]);
   }
   lcd.setCursor(4,1);
-  lcd.print("mm(max 1300)");
+  lcd.print("mm(max 800)");
   
-  //test motore
-  for(int i =1000; i>0;i--){
-    digitalWrite(11, HIGH);   
-    delayMicroseconds(i+50);               
-    digitalWrite(11, LOW);  
-    delayMicroseconds(i+50);    
-  }  
-  //fine test motore
+  
 }
 
 //#############################################################################   MAIN LOOP
@@ -264,13 +262,19 @@ void loop() {
 
     case  btnR:
       {
-        if (currentMenuItem == 5) break;      //can't go right from here
+        if (currentMenuItem == 1) break;      //can't go right from here
         else  currentMenuItem++;
         break;
       }
 
     case  btnSel:
       {
+        if(currentMenuItem == 0){
+          
+         
+          break; 
+        }  
+        else{
         currentMenuLevel++;
         if (currentCursorPos > 3 && (currentMenuItem == 0 || currentMenuItem == 2)) currentCursorPos = 3; //don't go off the end of the numbers for the 4-digit numbers
         if (currentCursorPos > 0 && (currentMenuItem > 2)) currentCursorPos = 0; // set blinking cursor to left for text-based options
@@ -279,44 +283,34 @@ void loop() {
           motionControl();
           break;
         }
+        }
       } 
     } //end of switch
   } //end of level 0
 
   else {    // i.e. "else if currentMenuLevel = 1"
-    if (currentMenuItem == 0) { //01 DISTANCE
-
+    if (currentMenuItem == 0) { //01 01TIMELAPSE
       switch (btnVal) {
       case btnUp:
         {
-          currentChar = currentDistance[currentCursorPos];
-          adjustDigit(currentChar, 1);
-          currentDistance[currentCursorPos] = currentChar;
           break;
         }
 
       case btnDn:
-        {
-          currentChar = currentDistance[currentCursorPos];
-          adjustDigit(currentChar, 0);
-          currentDistance[currentCursorPos] = currentChar;
+        {          
           break;
         }
 
       case btnL:
-        {
-          if (currentCursorPos == 0) break;      //can't go left from here
-          else currentCursorPos--;
+        {          
           break;
         }
 
       case btnR:
         {
-          if (currentCursorPos == 3) break;      //can't go left from here
-          else currentCursorPos++;
+          currentMenuItem = 1;
           break;
         }
-
       case btnSel:
         {
           parseArrayDistance();
